@@ -1,53 +1,121 @@
 ---
 page_type: sample
 languages:
-- csharp
+- java
 products:
-- dotnet
-description: "Add 150 character max description"
-urlFragment: "update-this-to-unique-url-stub"
+- java
+description: "A WildFly container quick start"
+urlFragment: "wildfly-container-quick-start"
 ---
+# WildFly on Containers QuickStart
 
-# Official Microsoft Sample
+This repository contains artifacts to help you get started running WildFly 
+applications on Azure container platforms, such as the Azure Kubernetes Service 
+(AKS).
 
-<!-- 
-Guidelines on README format: https://review.docs.microsoft.com/help/onboard/admin/samples/concepts/readme-template?branch=master
+### Pre-requisites
 
-Guidance on onboarding samples to docs.microsoft.com/samples: https://review.docs.microsoft.com/help/onboard/admin/samples/process/onboarding?branch=master
+For running locally:
 
-Taxonomies for products and languages: https://review.docs.microsoft.com/new-hope/information-architecture/metadata/taxonomies?branch=master
--->
+* [Docker CLI](https://docs.docker.com/install/)
 
-Give a short description for your sample here. What does it do and why is it important?
+For running on Azure:
 
-## Contents
+* [Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli)
+* [An Azure subscription](https://azure.microsoft.com/free/).
 
-Outline the file contents of the repository. It helps users navigate the codebase, build configuration and any related assets.
+### Building and testing locally
 
-| File/folder       | Description                                |
-|-------------------|--------------------------------------------|
-| `src`             | Sample source code.                        |
-| `.gitignore`      | Define what to ignore at commit time.      |
-| `CHANGELOG.md`    | List of changes to the sample.             |
-| `CONTRIBUTING.md` | Guidelines for contributing to the sample. |
-| `README.md`       | This README file.                          |
-| `LICENSE`         | The license for the sample.                |
+If you have Docker CLI installed locally, you can run this quick start on your 
+machine:
 
-## Prerequisites
+1. Clone the repository and navigate into the root of the repository:
 
-Outline the required components and tools that a user might need to have on their machine in order to run the sample. This can be anything from frameworks, SDKs, OS versions or IDE releases.
+    ```bash
+    git clone https://github.com/Azure/wildfly-container-quickstart.git
+    cd wildfly-container-quickstart
+    ```
 
-## Setup
+1. Build the WAR file locally.
 
-Explain how to prepare the sample once the user clones or downloads the repository. The section should outline every step necessary to install dependencies and set up any settings (for example, API keys and output folders).
+```shell
+mvn package
+```
 
-## Running the sample
+1. Build the docker image:
 
-Outline step-by-step instructions to execute the sample and see its output. Include steps for executing the sample from the IDE, starting specific services in the Azure portal or anything related to the overall launch of the code.
+    ```bash
+    docker build -t wildfly -f src/main/docker/Dockerfile .
+    ```
 
-## Key concepts
+1. Run the image:
 
-Provide users with more context on the tools and services used in the sample. Explain some of the code that is being used and how services interact with each other.
+    ```bash
+    docker run -p 8080:8080 -d wildfly
+    ```
+
+    Once the container is running, navigate to `http://localhost:8080` in 
+    [your favorite browser](https://www.microsoft.com/edge). You should see the 
+    web application come up.
+
+### Building and testing on Azure
+
+Alternatively, you can build and test the image entirely on Azure. These steps 
+can be performed from [Azure CloudShell](https://shell.azure.com) or from any 
+machine with [Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli)
+installed.
+
+1. [Create an Azure Container Registry](https://portal.azure.com/#create/Microsoft.ContainerRegistry).
+   Be sure to enable the admin user.
+
+1. Clone the repository and navigate into the root of the repository:
+
+```bash
+    git clone https://github.com/Azure/wildfly-container-quickstart.git
+    cd wildfly-container-quickstart
+```
+
+1. Build the WAR file locally.
+
+```shell
+mvn package
+```
+
+1. Once the Azure Container Registry instance is created, run the following 
+   command, where `${REGISTRY_NAME}` is the name of the Azure Container Registry
+   you just created:
+
+    ```bash
+    az acr build -r ${REGISTRY_NAME} -t "${REGISTRY_NAME}.azurecr.io/wildfly" -f src/main/docker/Dockerfile .
+    ```
+
+    The Azure Container Registry will now build the docker image on its own
+    server.
+
+1. Once the image build has completed, run the following command. It will deploy
+   the image onto an Azure Container Instance. `${RESOURCE_GROUP}` should be the
+   name of a resource group in your azure subscription. `${REGISTRY_NAME}` should
+   be the same as above:
+
+    ```bash
+    az container create -g ${RESOURCE_GROUP} -n ${REGISTRY_NAME} \
+      --image "${REGISTRY_NAME}.azurecr.io/wildfly"  \
+      --registry-password "$(az acr credential show -n $REGISTRY_NAME --query "passwords[0].value" -o tsv)" \
+      --registry-username "${REGISTRY_NAME}" \
+      --ip-address Public \
+      --ports 8080 \
+      --query "ipAddress.ip"
+    ```
+
+    When the command completes, it will display an IP address. 
+    Navigate to `http://<The IP Address>:8080` in your browser, and you should 
+    see the home page of the deployed web application.
+
+    To terminate the container instance, run
+
+    ```bash
+    az container delete -g ${RESOURCE_GROUP} -n ${REGISTRY_NAME} --yes
+    ```
 
 ## Contributing
 
