@@ -38,9 +38,9 @@ machine:
 
 1. Build the WAR file locally.
 
-```shell
-mvn package
-```
+    ```shell
+    mvn package
+    ```
 
 1. Build the docker image:
 
@@ -54,9 +54,9 @@ mvn package
     docker run -p 8080:8080 -d wildfly
     ```
 
-    Once the container is running, navigate to `http://localhost:8080` in 
-    [your favorite browser](https://www.microsoft.com/edge). You should see the 
-    web application come up.
+Once the container is running, navigate to `http://localhost:8080` in 
+[your favorite browser](https://www.microsoft.com/edge). You should see the 
+web application come up.
 
 ### Building and testing on Azure
 
@@ -70,16 +70,16 @@ installed.
 
 1. Clone the repository and navigate into the root of the repository:
 
-```bash
+    ```bash
     git clone https://github.com/Azure/wildfly-container-quickstart.git
     cd wildfly-container-quickstart
-```
+    ```
 
 1. Build the WAR file locally.
 
-```shell
-mvn package
-```
+    ```shell
+    mvn package
+    ```
 
 1. Once the Azure Container Registry instance is created, run the following 
    command, where `${REGISTRY_NAME}` is the name of the Azure Container Registry
